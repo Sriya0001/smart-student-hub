@@ -10,6 +10,7 @@ const s3Client = new S3Client({
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.S3_SECRET_KEY || process.env.AWS_SECRET_ACCESS_KEY,
+    ...(process.env.AWS_SESSION_TOKEN && { sessionToken: process.env.AWS_SESSION_TOKEN })
   },
   forcePathStyle: true, // Required for MinIO
 });
