@@ -1,0 +1,4 @@
+??? injecting env (4) from .env // tip: ??? suppress logs { quiet: true }
+Server running on port 3000
+Connected to MongoDB database: smart-student-hub
+
