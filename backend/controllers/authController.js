@@ -20,10 +20,13 @@ const logAction = async (userId, action, description, req) => {
 
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role, department, college, phone } = req.body;
+    const { name, email, password, role, department, college, phone, adminCode } = req.body;
 
     if (role === 'admin') {
-      return res.status(403).json({ message: 'Administrative accounts cannot be created via public signup' });
+      const correctCode = process.env.ADMIN_SECRET_CODE;
+      if (!correctCode || adminCode !== correctCode) {
+        return res.status(403).json({ message: 'Invalid admin registration code.' });
+      }
     }
 
     const existingUser = await User.findOne({ email });

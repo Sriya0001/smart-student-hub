@@ -12,6 +12,7 @@ export default function Signup() {
     college: '',
     phone: ''
   });
+  const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -26,7 +27,9 @@ export default function Signup() {
     setError('');
     
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/signup`, formData);
+      const payload = { ...formData };
+      if (formData.role === 'admin') payload.adminCode = adminCode;
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/signup`, payload);
       console.log('Signup successful:', response.data);
       navigate('/login');
     } catch (err) {
@@ -131,22 +134,37 @@ export default function Signup() {
 
           <div className="pt-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Register As</label>
-            <div className="grid grid-cols-2 gap-3">
-              {['student', 'faculty'].map((r) => (
+            <div className="grid grid-cols-3 gap-3">
+              {['student', 'faculty', 'admin'].map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setFormData({ ...formData, role: r })}
                   className={`py-2 px-3 text-sm font-medium rounded-lg capitalize transition-all cursor-pointer ${
                     formData.role === r 
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
+                      ? r === 'admin' ? 'bg-red-600 text-white shadow-md shadow-red-500/30'
+                        : 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {r}
+                  {r === 'admin' ? '🔐 Admin' : r}
                 </button>
               ))}
             </div>
+            {formData.role === 'admin' && (
+              <div className="mt-3">
+                <label className="block text-sm font-semibold text-red-600 mb-1">Admin Secret Code</label>
+                <input
+                  type="password"
+                  value={adminCode}
+                  onChange={e => setAdminCode(e.target.value)}
+                  placeholder="Enter the admin registration code"
+                  className="w-full px-4 py-2 rounded-xl border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 shadow-sm bg-red-50"
+                  required
+                />
+                <p className="text-xs text-red-400 mt-1">⚠️ Only authorised administrators can register with this role.</p>
+              </div>
+            )}
           </div>
 
           <button 
