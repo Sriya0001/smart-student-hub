@@ -3,21 +3,30 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const AchievementCard = ({ activity }) => {
+  const [viewUrl, setViewUrl] = useState(null);
   const shareToLinkedIn = () => {
     const text = `I'm proud to share my verified achievement: "${activity.title}" in ${activity.category}. This record is officially verified on the Smart Student Hub. #Achievement #ProfessionalGrowth #SmartStudentHub`;
     const url = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
 
+  const handleView = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/view-file`, {
+        params: { key: activity.fileUrl },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      window.open(res.data.url, '_blank');
+    } catch (e) {
+      alert('Could not load file. Please try again.');
+    }
+  };
+
   return (
     <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all group p-6 flex flex-col gap-4">
-      <div className="relative h-40 bg-gray-100 rounded-3xl overflow-hidden">
-        <img 
-          src={`http://localhost:3000${activity.fileUrl}`} 
-          alt={activity.title}
-          className="w-full h-full object-cover transition-transform group-hover:scale-110"
-          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80'; }}
-        />
+      <div className="relative h-40 bg-gray-100 rounded-3xl overflow-hidden flex items-center justify-center">
+        <div className="text-6xl opacity-30">📄</div>
         <div className={`absolute top-4 right-4 capitalize px-3 py-1 rounded-xl text-[10px] font-black shadow-sm ${
           activity.status === 'approved' ? 'bg-emerald-50 text-emerald-600' : 'bg-white/90 text-blue-600'
         }`}>
@@ -44,18 +53,17 @@ const AchievementCard = ({ activity }) => {
             </button>
           )}
         </div>
-        <a 
-          href={`http://localhost:3000${activity.fileUrl}`} 
-          target="_blank" 
-          rel="noreferrer"
-          className="text-blue-600 font-bold text-xs hover:underline uppercase tracking-tighter"
+        <button 
+          onClick={handleView}
+          className="text-blue-600 font-bold text-xs hover:underline uppercase tracking-tighter cursor-pointer"
         >
           View Doc ↗
-        </a>
+        </button>
       </div>
     </div>
   );
 };
+
 
 export default function AchievementGallery({ title, categories }) {
   const [activities, setActivities] = useState([]);

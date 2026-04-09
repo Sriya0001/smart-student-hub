@@ -126,3 +126,16 @@ exports.getStats = async (req, res) => {
     res.status(500).json({ message: 'Error fetching stats', error: error.message });
   }
 };
+
+exports.getFileViewUrl = async (req, res) => {
+  try {
+    const { key } = req.query;
+    if (!key) return res.status(400).json({ message: 'File key is required' });
+    const { generateDownloadUrl } = require('../utils/s3Service');
+    const url = await generateDownloadUrl(key);
+    res.json({ url });
+  } catch (error) {
+    res.status(500).json({ message: 'Error generating view URL', error: error.message });
+  }
+};
+

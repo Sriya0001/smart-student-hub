@@ -29,5 +29,6 @@ router.put('/profile', studentController.updateProfile);
 router.post('/upload', upload.single('certificate'), studentController.uploadActivity);
 router.get('/my', studentController.getMyActivities);
 router.get('/stats', studentController.getStats);
+router.get('/view-file', studentController.getFileViewUrl);
 
 module.exports = router;
