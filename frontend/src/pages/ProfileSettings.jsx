@@ -20,7 +20,7 @@ export default function ProfileSettings() {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/api/students/profile', {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({
@@ -41,7 +41,7 @@ export default function ProfileSettings() {
     setIsSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:3000/api/students/profile', formData, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/students/profile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Profile updated successfully!');

@@ -39,9 +39,9 @@ export default function StudentDashboard() {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [profileRes, activitiesRes, statsRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/students/profile', { headers }),
-        axios.get('http://localhost:3000/api/students/my', { headers }),
-        axios.get('http://localhost:3000/api/students/stats', { headers })
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/profile`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/my`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/stats`, { headers })
       ]);
       
       setUser(profileRes.data);

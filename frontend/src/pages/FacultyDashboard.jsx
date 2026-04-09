@@ -25,10 +25,10 @@ export default function FacultyDashboard() {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [activitiesRes, historyRes, statsRes, menteesRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/teachers/activities/pending', { headers }),
-        axios.get('http://localhost:3000/api/teachers/activities/history', { headers }),
-        axios.get('http://localhost:3000/api/teachers/stats', { headers }),
-        axios.get('http://localhost:3000/api/teachers/mentees', { headers })
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/pending`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/history`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/teachers/stats`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/teachers/mentees`, { headers })
       ]);
       
       setActivities(activitiesRes.data);
@@ -50,7 +50,7 @@ export default function FacultyDashboard() {
     setIsProcessing(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/teachers/activities/bulk-review', 
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/bulk-review`, 
         { ids: selectedIds, status, remarks: `Bulk ${status} by faculty review queue.` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -68,7 +68,7 @@ export default function FacultyDashboard() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:3000/api/teachers/activities/${id}/undo`, {}, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/${id}/undo`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
@@ -320,7 +320,7 @@ export default function FacultyDashboard() {
                     </div>
                     <div className="flex items-center gap-3">
                       <a 
-                        href={`http://localhost:3000${activity.fileUrl}`} 
+                        href={`${import.meta.env.VITE_API_BASE_URL_BASE}${activity.fileUrl}`} 
                         target="_blank" 
                         rel="noreferrer"
                         className="p-3 bg-gray-100 rounded-xl hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm group"

@@ -38,9 +38,9 @@ export default function AdminDashboard() {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [statsRes, logsRes, usersRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/admin/analytics', { headers }),
-        axios.get('http://localhost:3000/api/admin/logs', { headers }),
-        axios.get('http://localhost:3000/api/admin/users', { headers })
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/analytics`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/logs`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`, { headers })
       ]);
       
       setStats(statsRes.data);
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     setIsRepairing(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:3000/api/admin/mentorships/repair', {}, {
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/mentorships/repair`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert(res.data.message);

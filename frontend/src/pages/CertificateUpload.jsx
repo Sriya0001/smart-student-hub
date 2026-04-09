@@ -27,7 +27,7 @@ export default function CertificateUpload() {
       data.append('date', formData.date);
       data.append('certificate', file);
 
-      await axios.post('http://localhost:3000/api/students/upload', data, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/students/upload`, data, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`

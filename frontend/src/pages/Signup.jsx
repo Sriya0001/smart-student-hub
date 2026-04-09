@@ -26,7 +26,7 @@ export default function Signup() {
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:3000/api/signup', formData);
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/signup`, formData);
       console.log('Signup successful:', response.data);
       navigate('/login');
     } catch (err) {

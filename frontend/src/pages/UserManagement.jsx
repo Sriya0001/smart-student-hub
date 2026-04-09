@@ -14,7 +14,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/admin/users', {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(response.data);
@@ -30,7 +30,7 @@ export default function UserManagement() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/admin/users/${userId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('User deleted successfully');
@@ -47,7 +47,7 @@ export default function UserManagement() {
     setIsRepairing(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:3000/api/admin/mentorships/repair', {}, {
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/mentorships/repair`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert(res.data.message);

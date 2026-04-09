@@ -69,7 +69,7 @@ export default function AchievementGallery({ title, categories }) {
   const fetchActivities = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/api/students/my', {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
