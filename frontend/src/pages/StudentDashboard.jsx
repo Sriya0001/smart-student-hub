@@ -277,9 +277,12 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </div>
-            <button className="mt-6 bg-white text-indigo-600 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">
+            <a 
+              href={`mailto:${user.mentor.email}`}
+              className="mt-6 bg-white text-indigo-600 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center justify-center hover:bg-indigo-50 transition-colors"
+            >
               Contact Mentor
-            </button>
+            </a>
           </div>
         )}
       </div>

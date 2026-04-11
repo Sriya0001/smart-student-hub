@@ -108,9 +108,11 @@ export default function AchievementGallery({ title, categories }) {
              Explore your verified achievements, and maintain your professional growth timeline with secure integrity hashing.
           </p>
         </div>
-        <div className="relative z-10 px-8 py-4 bg-blue-600 rounded-3xl shadow-xl shadow-blue-500/20">
-             <span className="text-white font-black text-2xl">{activities.length}</span>
-             <span className="text-blue-100 font-black text-[10px] uppercase block tracking-widest mt-1">Verified Entries</span>
+        <div className="relative z-10 px-8 py-4 bg-blue-600 rounded-3xl shadow-xl shadow-blue-500/20 text-center">
+             <span className="text-white font-black text-2xl">
+               {activities.filter(a => a.status === 'approved').length} / {activities.length}
+             </span>
+             <span className="text-blue-100 font-black text-[10px] uppercase block tracking-widest mt-1">Verified / Total</span>
         </div>
       </div>
 

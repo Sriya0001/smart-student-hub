@@ -293,7 +293,12 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-8 py-5 text-gray-500 font-medium italic text-xs">"{log.description}"</td>
                   <td className="px-8 py-5 text-gray-400 font-mono text-[10px] text-right">
-                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {new Date(log.timestamp).toLocaleString(undefined, { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
                   </td>
                 </tr>
               ))}

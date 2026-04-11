@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
+const Notification = require('../models/Notification');
 
 // Helper for audit logging
 const logAction = async (userId, action, description, req) => {
@@ -86,10 +87,37 @@ exports.createFaculty = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (user.role === 'student') {
+      // Cascade: remove all their activities and notifications
+      await Activity.deleteMany({ studentId: user._id });
+      await Notification.deleteMany({ userId: user._id });
+    } else if (user.role === 'faculty') {
+      // Cascade: unassign this faculty from all their mentees
+      await User.updateMany({ mentor: user._id }, { $unset: { mentor: '' } });
+    }
+
     await User.findByIdAndDelete(req.params.id);
-    res.json({ message: 'User deleted successfully' });
+    await logAction(req.user.id, 'delete_user', `Deleted ${user.role} account: ${user.email}`, req);
+    res.json({ message: 'User and all associated data deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
+  }
+};
+
+exports.deleteActivity = async (req, res) => {
+  try {
+    const activity = await Activity.findById(req.params.id);
+    if (!activity) return res.status(404).json({ message: 'Activity not found' });
+
+    await Activity.findByIdAndDelete(req.params.id);
+    await Notification.deleteMany({ activityId: req.params.id });
+    await logAction(req.user.id, 'delete_activity', `Admin deleted activity: ${activity.title}`, req);
+    res.json({ message: 'Activity and associated notifications deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting activity', error: error.message });
   }
 };
 

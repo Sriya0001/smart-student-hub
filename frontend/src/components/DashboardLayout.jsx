@@ -24,7 +24,7 @@ function NotificationBell({ token }) {
   // Initial load + poll every 30 s
   useEffect(() => {
     fetchNotifications();
-    const id = setInterval(fetchNotifications, 30_000);
+    const id = setInterval(fetchNotifications, 10_000); // Polling every 10s for more real-time feel
     return () => clearInterval(id);
   }, [fetchNotifications]);
 

@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { createClient } = require('redis');
 const { RedisStore } = require('rate-limit-redis');
+const mongoSanitize = require('express-mongo-sanitize');
 require('dotenv').config();
 
 // Create Redis Client for distributed rate limiting
@@ -52,6 +53,7 @@ app.use('/api/', limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(mongoSanitize());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect(process.env.MONGODB_URI)

@@ -26,6 +26,7 @@ const upload = multer({
 router.use(authMiddleware('student'));
 router.get('/profile', studentController.getProfile);
 router.put('/profile', studentController.updateProfile);
+router.post('/change-password', studentController.changePassword);
 router.post('/upload', upload.single('certificate'), studentController.uploadActivity);
 router.get('/my', studentController.getMyActivities);
 router.get('/stats', studentController.getStats);

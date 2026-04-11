@@ -3,21 +3,27 @@ const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
 const Notification = require('../models/Notification');
 const crypto = require('crypto');
-const fs = require('fs').promises;
-const path = require('path');
+const { GetObjectCommand } = require('@aws-sdk/client-s3');
+const { s3Client } = require('../utils/s3Service');
+const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'student-records-bucket';
 
-// Helper for activity hash verification
-const verifyFileHash = async (filePath, storedHash) => {
+// Helper: download file from S3 and verify SHA-256 hash integrity
+const verifyFileHashS3 = async (fileKey, storedHash) => {
   if (!storedHash) return { valid: false, message: 'No digital fingerprint found' };
   try {
-    const fileBuffer = await fs.readFile(filePath);
+    const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: fileKey });
+    const response = await s3Client.send(command);
+    // Collect streaming body into a buffer
+    const chunks = [];
+    for await (const chunk of response.Body) chunks.push(chunk);
+    const fileBuffer = Buffer.concat(chunks);
     const currentHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-    return { 
-      valid: currentHash === storedHash, 
-      message: currentHash === storedHash ? 'Verified' : 'TAMPERED: File content changed!' 
+    return {
+      valid: currentHash === storedHash,
+      message: currentHash === storedHash ? 'Verified' : 'TAMPERED: File content changed!'
     };
   } catch (err) {
-    return { valid: false, message: 'Certificate file missing from server' };
+    return { valid: false, message: 'File not accessible in storage' };
   }
 };
 
@@ -43,10 +49,9 @@ exports.getPendingActivities = async (req, res) => {
       .populate('studentId', 'name studentId department email')
       .sort({ createdAt: -1 });
 
-    // Perform integrity check for each activity
+    // Perform S3-based integrity check for each activity
     const activitiesWithIntegrity = await Promise.all(activities.map(async (act) => {
-      const filePath = path.join(__dirname, '..', 'uploads', path.basename(act.fileUrl));
-      const integrity = await verifyFileHash(filePath, act.hash);
+      const integrity = await verifyFileHashS3(act.fileUrl, act.hash);
       return { ...act._doc, integrity };
     }));
 
@@ -162,10 +167,9 @@ exports.getReviewHistory = async (req, res) => {
     .sort({ reviewedAt: -1 })
     .limit(20);
 
-    // Perform integrity check for each history item
+    // Perform S3-based integrity check for each history item
     const historyWithIntegrity = await Promise.all(activities.map(async (act) => {
-      const filePath = path.join(__dirname, '..', 'uploads', path.basename(act.fileUrl));
-      const integrity = await verifyFileHash(filePath, act.hash);
+      const integrity = await verifyFileHashS3(act.fileUrl, act.hash);
       return { ...act._doc, integrity };
     }));
 

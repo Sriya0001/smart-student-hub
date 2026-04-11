@@ -14,6 +14,8 @@ export default function FacultyDashboard() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState('queue'); // 'queue', 'history', 'mentees'
+  const [reviewModal, setReviewModal] = useState({ isOpen: false, activity: null, status: '' });
+  const [remarks, setRemarks] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -82,6 +84,28 @@ export default function FacultyDashboard() {
     setSelectedIds(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
+  };
+
+  const handleSingleReview = async () => {
+    const { activity, status } = reviewModal;
+    if (!activity || !status) return;
+
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/${activity._id}/review`, 
+        { status, remarks: remarks || `Reviewed by faculty.` },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReviewModal({ isOpen: false, activity: null, status: '' });
+      setRemarks('');
+      fetchData();
+    } catch (err) {
+      console.error('Single review error:', err);
+      alert('Failed to process review.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const toggleSelectAll = () => {
@@ -328,6 +352,26 @@ export default function FacultyDashboard() {
                       >
                         <span className="text-lg">📄</span>
                       </a>
+
+                      {activeTab === 'queue' && (
+                        <>
+                          <button 
+                            onClick={() => setReviewModal({ isOpen: true, activity, status: 'approved' })}
+                            className="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all cursor-pointer shadow-sm"
+                            title="Approve with Remarks"
+                          >
+                            <span className="text-sm font-black">✓</span>
+                          </button>
+                          <button 
+                            onClick={() => setReviewModal({ isOpen: true, activity, status: 'rejected' })}
+                            className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all cursor-pointer shadow-sm"
+                            title="Reject with Remarks"
+                          >
+                            <span className="text-sm font-black">✕</span>
+                          </button>
+                        </>
+                      )}
+
                       {activeTab === 'history' && (
                         <button 
                           onClick={() => handleUndo(activity._id)}
@@ -361,6 +405,51 @@ export default function FacultyDashboard() {
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      {reviewModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
+            <div className={`px-8 py-6 flex items-center justify-between ${reviewModal.status === 'approved' ? 'bg-emerald-600' : 'bg-rose-600'}`}>
+              <div>
+                <h3 className="text-xl font-black text-white">
+                  {reviewModal.status === 'approved' ? 'Approve' : 'Reject'} Activity
+                </h3>
+                <p className="text-white/80 text-xs mt-1">Reviewing: {reviewModal.activity?.title}</p>
+              </div>
+              <button onClick={() => setReviewModal({ isOpen: false, activity: null, status: '' })} className="text-white hover:scale-110 transition-all cursor-pointer text-2xl">✕</button>
+            </div>
+            
+            <div className="p-8 space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Verification Remarks</label>
+                <textarea 
+                  className="w-full h-32 bg-gray-50 border border-gray-100 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-gray-700"
+                  placeholder={reviewModal.status === 'approved' ? 'e.g., Certificate verified. Excellent work!' : 'e.g., Document is blurry or incorrect category selected.'}
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setReviewModal({ isOpen: false, activity: null, status: '' })}
+                  className="flex-1 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSingleReview}
+                  disabled={isProcessing}
+                  className={`flex-1 py-4 rounded-2xl text-white font-black shadow-lg transition-all cursor-pointer ${reviewModal.status === 'approved' ? 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700' : 'bg-rose-600 shadow-rose-200 hover:bg-rose-700'}`}
+                >
+                  {isProcessing ? 'Wait...' : reviewModal.status === 'approved' ? 'Approve Now' : 'Reject Now'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Bulk Action Bar (only show in queue) */}
       {activeTab === 'queue' && selectedIds.length > 0 && (

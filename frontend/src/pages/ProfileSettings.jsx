@@ -11,6 +11,10 @@ export default function ProfileSettings() {
   });
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [pwMsg, setPwMsg] = useState({ text: '', ok: false });
+  const [isSavingPw, setIsSavingPw] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,18 +43,39 @@ export default function ProfileSettings() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
+    setSaveMsg('');
     try {
       const token = localStorage.getItem('token');
       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/students/profile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Profile updated successfully!');
-      navigate('/student/dashboard');
+      setSaveMsg('✅ Profile updated successfully!');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Failed to update profile.');
+      setSaveMsg('❌ Failed to update profile.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      return setPwMsg({ text: '❌ New passwords do not match.', ok: false });
+    }
+    setIsSavingPw(true);
+    setPwMsg({ text: '', ok: false });
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/students/change-password`,
+        { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPwMsg({ text: '✅ Password changed successfully!', ok: true });
+      setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setPwMsg({ text: `❌ ${err.response?.data?.message || 'Failed to change password.'}`, ok: false });
+    } finally {
+      setIsSavingPw(false);
     }
   };
 
@@ -113,6 +138,9 @@ export default function ProfileSettings() {
             </div>
           </div>
 
+          {saveMsg && (
+            <p className={`text-sm font-bold mt-2 ${saveMsg.startsWith('✅') ? 'text-emerald-600' : 'text-red-600'}`}>{saveMsg}</p>
+          )}
           <div className="pt-8 border-t border-gray-50 flex justify-end gap-4">
             <button 
               type="button" 
@@ -129,6 +157,35 @@ export default function ProfileSettings() {
               {isSaving ? 'SAVING CHANGES...' : 'SAVE PROFILE'}
             </button>
           </div>
+        </form>
+      </div>
+
+      {/* Change Password Section */}
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 md:p-12 mt-6">
+        <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">🔒 Change Password</h2>
+        <form onSubmit={handleChangePassword} className="space-y-5 max-w-md">
+          {[{ label: 'Current Password', key: 'currentPassword' }, { label: 'New Password', key: 'newPassword' }, { label: 'Confirm New Password', key: 'confirmPassword' }].map(f => (
+            <div key={f.key} className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{f.label}</label>
+              <input
+                type="password"
+                required
+                className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-gray-800"
+                value={pwForm[f.key]}
+                onChange={e => setPwForm({ ...pwForm, [f.key]: e.target.value })}
+              />
+            </div>
+          ))}
+          {pwMsg.text && (
+            <p className={`text-sm font-bold ${pwMsg.ok ? 'text-emerald-600' : 'text-red-600'}`}>{pwMsg.text}</p>
+          )}
+          <button
+            type="submit"
+            disabled={isSavingPw}
+            className="px-10 py-3 bg-gray-900 text-white rounded-2xl font-black shadow-lg hover:scale-105 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isSavingPw ? 'UPDATING...' : 'UPDATE PASSWORD'}
+          </button>
         </form>
       </div>
     </div>
