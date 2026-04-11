@@ -134,8 +134,8 @@ export default function Signup() {
 
           <div className="pt-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Register As</label>
-            <div className="grid grid-cols-3 gap-3">
-              {['student', 'faculty', 'admin'].map((r) => (
+            <div className="grid grid-cols-2 gap-3">
+              {['student', 'admin'].map((r) => (
                 <button
                   key={r}
                   type="button"
