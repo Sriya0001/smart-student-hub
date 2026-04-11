@@ -8,9 +8,10 @@ const { auditLogger } = require('../middleware/auditLogger');
 router.use(authMiddleware('admin'));
 
 router.get('/users', adminController.getAllUsers);
+router.post('/users/faculty', auditLogger('CREATED_FACULTY'), adminController.createFaculty);
 router.delete('/users/:id', auditLogger('DELETED_USER'), adminController.deleteUser);
 router.get('/analytics', adminController.getAnalytics);
-router.get('/logs', adminController.getLogs); // They already had a /logs endpoint it seems, but now it will use our improved Audit Log or their original Log schema.
+router.get('/logs', adminController.getLogs);
 router.post('/mentorships/repair', auditLogger('REPAIRED_MENTORSHIPS'), adminController.repairMentorships);
 
 module.exports = router;
