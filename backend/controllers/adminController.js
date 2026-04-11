@@ -32,34 +32,46 @@ exports.getAllUsers = async (req, res) => {
 
 exports.repairMentorships = async (req, res) => {
   try {
-    const students = await User.find({ role: 'student', mentor: null });
+    const students = await User.find({ role: 'student' }); // Include all students for rebalancing
     const faculty = await User.find({ role: 'faculty' });
     
     let repairedCount = 0;
     
+    // Group faculty by department for efficiency
+    const facultyByDept = faculty.reduce((acc, f) => {
+      if (!acc[f.department]) acc[f.department] = [];
+      acc[f.department].push(f);
+      return acc;
+    }, {});
+
     for (const student of students) {
       if (!student.department) continue;
       
-      const deptFaculty = faculty.filter(f => f.department === student.department);
-      if (deptFaculty.length > 0) {
-        // Simple Load Balancing: find faculty with fewest mentees
+      const deptFaculty = facultyByDept[student.department];
+      if (deptFaculty && deptFaculty.length > 0) {
+        // Find faculty with FEWEST mentees in this department
         const facultyWithLoad = await Promise.all(deptFaculty.map(async (f) => {
           const count = await User.countDocuments({ mentor: f._id });
           return { id: f._id, count };
         }));
         
         facultyWithLoad.sort((a, b) => a.count - b.count);
-        student.mentor = facultyWithLoad[0].id;
-        await student.save();
-        repairedCount++;
+        const bestMentorId = facultyWithLoad[0].id;
+
+        // Only update if it actually changes the mentor (to avoid unnecessary saves)
+        if (!student.mentor || student.mentor.toString() !== bestMentorId.toString()) {
+          student.mentor = bestMentorId;
+          await student.save();
+          repairedCount++;
+        }
       }
     }
     
-    await logAction(req.user.id, 'repair_mentorships', `Repaired ${repairedCount} student-mentor links`, req);
+    await logAction(req.user.id, 'rebalance_mentorships', `Rebalanced ${repairedCount} student-mentor links`, req);
     
-    res.json({ message: `Successfully repaired ${repairedCount} mentorship links.`, repairedCount });
+    res.json({ message: `Successfully rebalanced ${repairedCount} mentorship links for fair distribution.`, repairedCount });
   } catch (error) {
-    res.status(500).json({ message: 'Repair failed', error: error.message });
+    res.status(500).json({ message: 'Repair/Rebalance failed', error: error.message });
   }
 };
 
