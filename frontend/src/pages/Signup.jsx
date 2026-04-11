@@ -13,6 +13,7 @@ export default function Signup() {
     phone: ''
   });
   const [adminCode, setAdminCode] = useState('');
+  const [facultyCode, setFacultyCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function Signup() {
     try {
       const payload = { ...formData };
       if (formData.role === 'admin') payload.adminCode = adminCode;
+      if (formData.role === 'faculty') payload.facultyCode = facultyCode;
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/signup`, payload);
       console.log('Signup successful:', response.data);
       navigate('/login');
@@ -134,8 +136,8 @@ export default function Signup() {
 
           <div className="pt-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Register As</label>
-            <div className="grid grid-cols-2 gap-3">
-              {['student', 'admin'].map((r) => (
+            <div className="grid grid-cols-3 gap-3">
+              {['student', 'faculty', 'admin'].map((r) => (
                 <button
                   key={r}
                   type="button"
@@ -143,14 +145,29 @@ export default function Signup() {
                   className={`py-2 px-3 text-sm font-medium rounded-lg capitalize transition-all cursor-pointer ${
                     formData.role === r 
                       ? r === 'admin' ? 'bg-red-600 text-white shadow-md shadow-red-500/30'
+                        : r === 'faculty' ? 'bg-green-600 text-white shadow-md shadow-green-500/30'
                         : 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {r === 'admin' ? '🔐 Admin' : r}
+                  {r === 'admin' ? '🔐 Admin' : r === 'faculty' ? '🎓 Faculty' : r}
                 </button>
               ))}
             </div>
+            {formData.role === 'faculty' && (
+              <div className="mt-3">
+                <label className="block text-sm font-semibold text-green-600 mb-1">Faculty Code</label>
+                <input
+                  type="password"
+                  value={facultyCode}
+                  onChange={e => setFacultyCode(e.target.value)}
+                  placeholder="Enter the faculty registration code"
+                  className="w-full px-4 py-2 rounded-xl border border-green-200 focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm bg-green-50"
+                  required
+                />
+                <p className="text-xs text-green-600 mt-1">🎓 Only authorised faculty members can register with this role.</p>
+              </div>
+            )}
             {formData.role === 'admin' && (
               <div className="mt-3">
                 <label className="block text-sm font-semibold text-red-600 mb-1">Admin Secret Code</label>

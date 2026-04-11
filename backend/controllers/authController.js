@@ -20,11 +20,11 @@ const logAction = async (userId, action, description, req) => {
 
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role, department, college, phone, adminCode } = req.body;
+    const { name, email, password, role, department, college, phone, adminCode, facultyCode } = req.body;
 
     // Security: Determine the allowed role.
     // - 'admin'   → only with the correct ADMIN_SECRET_CODE
-    // - 'faculty' → BLOCKED on public signup; faculty accounts are created by admins only
+    // - 'faculty' → only with the correct FACULTY_SECRET_CODE
     // - anything else → always 'student'
     let assignedRole = 'student';
     if (role === 'admin') {
@@ -34,8 +34,11 @@ exports.signup = async (req, res) => {
       }
       assignedRole = 'admin';
     } else if (role === 'faculty') {
-      // Explicitly block self-promotion to faculty via public signup
-      return res.status(403).json({ message: 'Faculty accounts can only be created by an administrator.' });
+      const correctCode = process.env.FACULTY_SECRET_CODE;
+      if (!correctCode || facultyCode !== correctCode) {
+        return res.status(403).json({ message: 'Invalid faculty registration code.' });
+      }
+      assignedRole = 'faculty';
     }
 
     const existingUser = await User.findOne({ email });
