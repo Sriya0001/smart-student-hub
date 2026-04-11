@@ -93,7 +93,7 @@ export default function FacultyDashboard() {
     setIsProcessing(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/${activity._id}/review`, 
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/teachers/activities/${activity._id}/review`, 
         { status, remarks: remarks || `Reviewed by faculty.` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
