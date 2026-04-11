@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
+const Notification = require('../models/Notification');
 const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
@@ -78,7 +79,20 @@ exports.reviewActivity = async (req, res) => {
     activity.reviewedAt = new Date();
 
     await activity.save();
-    
+
+    // Create in-app notification for the student
+    const emoji = status === 'approved' ? '✅' : '❌';
+    const notifMessage = status === 'approved'
+      ? `Your activity "${activity.title}" has been approved. Great work!`
+      : `Your activity "${activity.title}" was rejected. Reason: ${activity.remarks || 'No reason provided.'}`;
+    await Notification.create({
+      userId: activity.studentId,
+      activityId: activity._id,
+      type: status,
+      title: `Activity ${status === 'approved' ? 'Approved' : 'Rejected'} ${emoji}`,
+      message: notifMessage
+    });
+
     await logAction(req.user.id, `activity_${status}`, `Activity ${id} reviewed as ${status}`, req);
 
     res.json({ message: `Activity ${status} successfully`, activity });
@@ -110,6 +124,21 @@ exports.bulkReview = async (req, res) => {
         } 
       }
     );
+
+    // Create in-app notifications for all affected students
+    const updatedActivities = await Activity.find({ _id: { $in: ids } }).select('studentId title');
+    const emoji = status === 'approved' ? '✅' : '❌';
+    const notifTitle = `Activity ${status === 'approved' ? 'Approved' : 'Rejected'} ${emoji}`;
+    const notifications = updatedActivities.map(act => ({
+      userId: act.studentId,
+      activityId: act._id,
+      type: status,
+      title: notifTitle,
+      message: status === 'approved'
+        ? `Your activity "${act.title}" has been approved. Great work!`
+        : `Your activity "${act.title}" was rejected. Reason: ${remarks || 'Bulk reviewed.'}`
+    }));
+    if (notifications.length > 0) await Notification.insertMany(notifications);
 
     await logAction(req.user.id, 'bulk_review', `Bulk ${status} of ${ids.length} activities`, req);
 

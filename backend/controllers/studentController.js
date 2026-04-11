@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
+const Notification = require('../models/Notification');
 const crypto = require('crypto');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const { s3Client } = require('../utils/s3Service');
@@ -139,3 +140,28 @@ exports.getFileViewUrl = async (req, res) => {
   }
 };
 
+// Fetch all notifications for the logged-in student (newest first)
+exports.getNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(30);
+    const unreadCount = notifications.filter(n => !n.read).length;
+    res.json({ notifications, unreadCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notifications', error: error.message });
+  }
+};
+
+// Mark all unread notifications as read for the logged-in student
+exports.markNotificationsRead = async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.user.id, read: false },
+      { $set: { read: true } }
+    );
+    res.json({ message: 'All notifications marked as read' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating notifications', error: error.message });
+  }
+};

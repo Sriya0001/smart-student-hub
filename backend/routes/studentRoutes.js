@@ -30,5 +30,7 @@ router.post('/upload', upload.single('certificate'), studentController.uploadAct
 router.get('/my', studentController.getMyActivities);
 router.get('/stats', studentController.getStats);
 router.get('/view-file', studentController.getFileViewUrl);
+router.get('/notifications', studentController.getNotifications);
+router.put('/notifications/read', studentController.markNotificationsRead);
 
 module.exports = router;
