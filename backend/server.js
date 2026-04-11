@@ -17,6 +17,10 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
+// Trust the first proxy (e.g. Render/Vercel load balancer)
+// This is required for express-rate-limit to accurately identify client IPs
+app.set('trust proxy', 1);
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
