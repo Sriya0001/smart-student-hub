@@ -11,13 +11,6 @@ const { RedisStore } = require('rate-limit-redis');
 const mongoSanitize = require('express-mongo-sanitize');
 require('dotenv').config();
 
-// Create Redis Client for distributed rate limiting
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
-redisClient.connect().catch(console.error);
-
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
@@ -38,18 +31,29 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Move limiter AFTER CORS to ensure OPTIONS are handled first if needed
-const limiter = rateLimit({
+// Configure rate limiter options
+const limiterOptions = {
   windowMs: 15 * 60 * 1000,
   max: 1000, // Very generous for development/admin use
   message: 'Too many requests from this IP',
-  skip: (req) => req.method === 'OPTIONS' || req.path.startsWith('/api/admin'),
-  store: new RedisStore({
-    sendCommand: (...args) => redisClient.sendCommand(args),
-  }),
-});
-app.use('/api/', limiter);
+  skip: (req) => req.method === 'OPTIONS' || req.path.startsWith('/api/admin')
+};
 
+// Use Redis for distributed rate limiting if configured
+if (process.env.REDIS_URL) {
+  const redisClient = createClient({
+    url: process.env.REDIS_URL
+  });
+  redisClient.on('error', (err) => console.error('Redis Client Error', err));
+  redisClient.connect().catch(console.error);
+
+  limiterOptions.store = new RedisStore({
+    sendCommand: (...args) => redisClient.sendCommand(args),
+  });
+}
+
+const limiter = rateLimit(limiterOptions);
+app.use('/api/', limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
