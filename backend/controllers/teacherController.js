@@ -45,7 +45,16 @@ const logAction = async (userId, action, description, req) => {
 
 exports.getPendingActivities = async (req, res) => {
   try {
-    const activities = await Activity.find({ status: 'pending' })
+    let query = { status: 'pending' };
+
+    // Security: Faculty only see their assigned mentees. Admins see everyone.
+    if (req.user.role === 'faculty') {
+      const mentees = await User.find({ mentor: req.user.id }).select('_id');
+      const menteeIds = mentees.map(m => m._id);
+      query.studentId = { $in: menteeIds };
+    }
+
+    const activities = await Activity.find(query)
       .populate('studentId', 'name studentId department email')
       .sort({ createdAt: -1 });
 
@@ -209,14 +218,23 @@ exports.undoReview = async (req, res) => {
 
 exports.getFacultyDashboardStats = async (req, res) => {
   try {
-    const pendingCount = await Activity.countDocuments({ status: 'pending' });
-    const approvedCount = await Activity.countDocuments({ status: 'approved' });
-    const rejectedCount = await Activity.countDocuments({ status: 'rejected' });
+    let query = {};
+    
+    // Security: Faculty only see their assigned mentees. Admins see everyone.
+    if (req.user.role === 'faculty') {
+      const mentees = await User.find({ mentor: req.user.id }).select('_id');
+      const menteeIds = mentees.map(m => m._id);
+      query.studentId = { $in: menteeIds };
+    }
+
+    const pendingCount = await Activity.countDocuments({ ...query, status: 'pending' });
+    const approvedCount = await Activity.countDocuments({ ...query, status: 'approved' });
+    const rejectedCount = await Activity.countDocuments({ ...query, status: 'rejected' });
     
     // Category Distribution for charts
     const categories = ['Academic', 'Co-Curricular', 'Extra-Curricular', 'Workshop', 'Internship', 'Project', 'Other'];
     const categoryStats = await Promise.all(categories.map(async (cat) => {
-      const count = await Activity.countDocuments({ category: cat });
+      const count = await Activity.countDocuments({ ...query, category: cat });
       return { name: cat, value: count };
     }));
     
