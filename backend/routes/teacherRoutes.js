@@ -14,5 +14,6 @@ router.post('/activities/:id/undo', auditLogger('UNDO_REVIEW_ACTIVITY'), teacher
 router.post('/activities/bulk-review', auditLogger('BULK_REVIEW_ACTIVITIES'), teacherController.bulkReview);
 router.get('/stats', teacherController.getFacultyDashboardStats);
 router.get('/mentees', teacherController.getMentees);
+router.get('/view-file', teacherController.getFileViewUrl);
 
 module.exports = router;

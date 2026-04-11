@@ -116,6 +116,19 @@ export default function FacultyDashboard() {
     }
   };
 
+  const handleViewFile = async (key) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/teachers/view-file`, {
+        params: { key },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      window.open(res.data.url, '_blank');
+    } catch (e) {
+      alert('Could not load file from secure storage.');
+    }
+  };
+
   const filteredActivities = (activeTab === 'queue' ? activities : history).filter(a => 
     a.studentId?.name?.toLowerCase().includes(filter.toLowerCase()) ||
     a.title?.toLowerCase().includes(filter.toLowerCase()) ||
@@ -343,15 +356,16 @@ export default function FacultyDashboard() {
                       <span className="text-sm font-bold text-gray-700">{new Date(activity.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <a 
-                        href={`${import.meta.env.VITE_API_BASE_URL_BASE}${activity.fileUrl}`} 
-                        target="_blank" 
-                        rel="noreferrer"
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleViewFile(activity.fileUrl);
+                        }}
                         className="p-3 bg-gray-100 rounded-xl hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm group"
                         title="View Certificate"
                       >
                         <span className="text-lg">📄</span>
-                      </a>
+                      </button>
 
                       {activeTab === 'queue' && (
                         <>
