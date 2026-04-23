@@ -256,49 +256,63 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Audit Logs Trail */}
+      {/* Recent Edits & System Fingerprints (Audit Trail) */}
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-8 border-b border-gray-100">
-          <h3 className="text-xl font-black text-gray-800 tracking-tight">System Audit Trail</h3>
+        <div className="p-8 border-b border-gray-100 bg-gray-50/30">
+          <h3 className="text-xl font-black text-gray-800 tracking-tight">Recent Edits & System Fingerprints</h3>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">REAL-TIME IMMUTABLE ACTIVITY MONITORING</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-gray-50/50 uppercase text-[10px] font-black text-gray-400">
+            <thead className="bg-gray-50/80 uppercase text-[10px] font-black text-gray-400">
               <tr>
                 <th className="px-8 py-5">System Actor</th>
                 <th className="px-8 py-5">Action Identifier</th>
+                <th className="px-8 py-5">Target Entity</th>
                 <th className="px-8 py-5">Operational Details</th>
-                <th className="px-8 py-5 text-right">Timestamp</th>
+                <th className="px-8 py-5 text-right">Fingerprint / Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
               {logs.map((log) => (
-                <tr key={log._id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={log._id} className="hover:bg-blue-50/20 transition-colors">
                   <td className="px-8 py-5">
                     <div className="flex flex-col">
-                      <span className="font-black text-gray-900">{log.userId?.name || 'CORE_SYSTEM'}</span>
-                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">{log.userId?.role || 'AUTO'}</span>
+                      <span className="font-black text-gray-900">{log.actorName || log.actorId?.name || 'CORE_SYSTEM'}</span>
+                      <span className={`text-[10px] font-black uppercase tracking-tighter w-fit px-1.5 rounded ${
+                        log.actorRole === 'admin' ? 'bg-purple-50 text-purple-600' :
+                        log.actorRole === 'faculty' ? 'bg-blue-50 text-blue-600' :
+                        'text-gray-400'
+                      }`}>{log.actorRole || 'AUTO'}</span>
                     </div>
                   </td>
                   <td className="px-8 py-5">
                     <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${
                       log.action.includes('login') ? 'bg-white text-blue-700 border-blue-100' :
                       log.action.includes('upload') ? 'bg-white text-amber-700 border-amber-100' :
-                      log.action.includes('approve') ? 'bg-white text-emerald-700 border-emerald-100' :
-                      log.action.includes('repair') ? 'bg-white text-indigo-700 border-indigo-100' :
+                      log.action.includes('review') || log.action.includes('approve') ? 'bg-white text-emerald-700 border-emerald-100' :
+                      log.action.includes('repair') || log.action.includes('rebalance') ? 'bg-white text-indigo-700 border-indigo-100' :
                       'bg-white text-gray-700 border-gray-100'
                     }`}>
-                      {log.action.replace('_', ' ')}
+                      {log.action.replace('_', ' ').replace('.', ' ')}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-gray-500 font-medium italic text-xs">"{log.description}"</td>
-                  <td className="px-8 py-5 text-gray-400 font-mono text-[10px] text-right">
-                    {new Date(log.timestamp).toLocaleString(undefined, { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
+                  <td className="px-8 py-5">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-black text-gray-700">{log.targetName || '—'}</span>
+                      <span className="text-[9px] text-gray-400 font-bold uppercase">{log.targetType}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5 text-gray-500 font-medium italic text-xs">"{log.detail || log.description}"</td>
+                  <td className="px-8 py-5 text-right whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="text-gray-400 font-mono text-[10px] font-bold">
+                        {new Date(log.timestamp).toLocaleString(undefined, { 
+                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                        })}
+                      </span>
+                      <span className="text-[9px] text-gray-300 font-mono tracking-tighter">{log.ipAddress || '0.0.0.0'}</span>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -3,21 +3,7 @@ const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
 const Notification = require('../models/Notification');
 
-// Helper for audit logging
-const logAction = async (userId, action, description, req) => {
-  try {
-    const log = new AuditLog({
-      userId,
-      action,
-      description,
-      ip: req.ip || req.connection.remoteAddress,
-      userAgent: req.headers['user-agent']
-    });
-    await log.save();
-  } catch (err) {
-    console.error('Audit log failed:', err.message);
-  }
-};
+const { logAction } = require('../utils/audit');
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -67,7 +53,13 @@ exports.repairMentorships = async (req, res) => {
       }
     }
     
-    await logAction(req.user.id, 'rebalance_mentorships', `Rebalanced ${repairedCount} student-mentor links`, req);
+    await logAction(req, {
+      action: 'rebalance_mentorships',
+      actorRole: 'admin',
+      actorId: req.user.id,
+      actorName: 'Admin', // Could be req.user.name if available
+      detail: `Rebalanced ${repairedCount} student-mentor links`
+    });
     
     res.json({ message: `Successfully rebalanced ${repairedCount} mentorship links for fair distribution.`, repairedCount });
   } catch (error) {
@@ -89,7 +81,16 @@ exports.createFaculty = async (req, res) => {
     const faculty = new User({ name, email, password, role: 'faculty', department, college, phone });
     await faculty.save();
 
-    await logAction(req.user.id, 'create_faculty', `Admin created faculty account for ${email}`, req);
+    await logAction(req, {
+      action: 'create_faculty',
+      actorRole: 'admin',
+      actorId: req.user.id,
+      actorName: 'Admin',
+      targetType: 'faculty',
+      targetId: faculty._id,
+      targetName: email,
+      detail: `Admin created faculty account for ${email}`
+    });
 
     res.status(201).json({ message: 'Faculty account created successfully.', user: { id: faculty._id, name, email, role: 'faculty', department } });
   } catch (error) {
@@ -112,7 +113,16 @@ exports.deleteUser = async (req, res) => {
     }
 
     await User.findByIdAndDelete(req.params.id);
-    await logAction(req.user.id, 'delete_user', `Deleted ${user.role} account: ${user.email}`, req);
+    await logAction(req, {
+      action: 'delete_user',
+      actorRole: 'admin',
+      actorId: req.user.id,
+      actorName: 'Admin',
+      targetType: user.role,
+      targetId: user._id,
+      targetName: user.email,
+      detail: `Deleted ${user.role} account: ${user.email}`
+    });
     res.json({ message: 'User and all associated data deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
@@ -126,7 +136,16 @@ exports.deleteActivity = async (req, res) => {
 
     await Activity.findByIdAndDelete(req.params.id);
     await Notification.deleteMany({ activityId: req.params.id });
-    await logAction(req.user.id, 'delete_activity', `Admin deleted activity: ${activity.title}`, req);
+    await logAction(req, {
+      action: 'delete_activity',
+      actorRole: 'admin',
+      actorId: req.user.id,
+      actorName: 'Admin',
+      targetType: 'activity',
+      targetId: activity._id,
+      targetName: activity.title,
+      detail: `Admin deleted activity: ${activity.title}`
+    });
     res.json({ message: 'Activity and associated notifications deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting activity', error: error.message });
@@ -174,7 +193,8 @@ exports.getAnalytics = async (req, res) => {
 
 exports.getLogs = async (req, res) => {
   try {
-    const logs = await AuditLog.find().populate('userId', 'name email role').sort({ timestamp: -1 }).limit(100);
+    const logs = await AuditLog.find().populate('actorId', 'name email role').sort({ timestamp: -1 }).limit(100);
+
     res.json(logs);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching logs', error: error.message });

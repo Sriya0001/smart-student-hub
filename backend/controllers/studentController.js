@@ -7,21 +7,8 @@ const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const { s3Client } = require('../utils/s3Service');
 const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'student-records-bucket';
 
-// Helper for audit logging
-const logAction = async (userId, action, description, req) => {
-  try {
-    const log = new AuditLog({
-      userId,
-      action,
-      description,
-      ip: req.ip || req.connection.remoteAddress,
-      userAgent: req.headers['user-agent']
-    });
-    await log.save();
-  } catch (err) {
-    console.error('Audit log failed:', err.message);
-  }
-};
+const { logAction } = require('../utils/audit');
+const { injectXmpMetadata } = require('../utils/xmpMetadata');
 
 // Helper for activity hash (Hashing actual file content buffer)
 const generateFileHash = (fileBuffer) => {
@@ -53,6 +40,18 @@ exports.updateProfile = async (req, res) => {
     delete updates.password;
     
     const user = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true }).select('-password');
+    
+    await logAction(req, {
+      action: 'profile_updated',
+      actorRole: 'student',
+      actorId: user._id,
+      actorName: user.name,
+      targetType: 'student',
+      targetId: user._id,
+      targetName: user.name,
+      detail: `Fields updated: ${Object.keys(updates).join(', ')}`
+    });
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -70,11 +69,27 @@ exports.uploadActivity = async (req, res) => {
     const fileExtension = req.file.originalname.split('.').pop();
     const fileName = `certificates/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExtension}`;
     
+    let fileBuffer = req.file.buffer;
+    const user = await User.findById(req.user.id);
+
+    // ── XMP Metadata Injection (PDF only) ──────────────────────────
+    if (fileExtension.toLowerCase() === 'pdf' && user) {
+      // Construct a student object for XMP
+      const studentData = {
+        name: user.name,
+        branch: user.department || 'N/A',
+        cgpa: user.cgpa || '0.0',
+        email: user.email,
+        skills: user.skills || ''
+      };
+      fileBuffer = await injectXmpMetadata(fileBuffer, studentData);
+    }
+
     // Cloud Security: Direct to S3 Upload
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: fileName,
-      Body: req.file.buffer,
+      Body: fileBuffer,
       ContentType: req.file.mimetype,
     });
     await s3Client.send(command);
@@ -83,7 +98,7 @@ exports.uploadActivity = async (req, res) => {
     const fileUrl = fileName; 
     
     // Generate hash for file integrity (SHA-256) using in-memory buffer
-    const hash = generateFileHash(req.file.buffer);
+    const hash = generateFileHash(fileBuffer);
     
     const activity = new Activity({
       studentId: req.user.id,
@@ -98,7 +113,16 @@ exports.uploadActivity = async (req, res) => {
 
     await activity.save();
     
-    await logAction(req.user.id, 'upload_activity', `Uploaded activity: ${title}`, req);
+    await logAction(req, {
+      action: 'upload_activity',
+      actorRole: 'student',
+      actorId: req.user.id,
+      actorName: user ? user.name : 'Unknown Student',
+      targetType: 'activity',
+      targetId: activity._id,
+      targetName: title,
+      detail: `Uploaded certificate to S3: ${fileName}`
+    });
 
     res.status(201).json({ message: 'Activity uploaded successfully', activity });
   } catch (error) {
@@ -184,7 +208,13 @@ exports.changePassword = async (req, res) => {
 
     user.password = newPassword;
     await user.save(); // Password hashing handled by pre-save hook in User model
-    await logAction(req.user.id, 'change_password', 'User changed their password', req);
+    await logAction(req, {
+      action: 'change_password',
+      actorRole: 'student',
+      actorId: user._id,
+      actorName: user.name,
+      detail: 'User changed their password'
+    });
     res.json({ message: 'Password updated successfully.' });
   } catch (error) {
     res.status(500).json({ message: 'Error changing password', error: error.message });

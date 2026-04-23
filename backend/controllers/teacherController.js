@@ -27,21 +27,7 @@ const verifyFileHashS3 = async (fileKey, storedHash) => {
   }
 };
 
-// Helper for audit logging
-const logAction = async (userId, action, description, req) => {
-  try {
-    const log = new AuditLog({
-      userId,
-      action,
-      description,
-      ip: req.ip || req.connection.remoteAddress,
-      userAgent: req.headers['user-agent']
-    });
-    await log.save();
-  } catch (err) {
-    console.error('Audit log failed:', err.message);
-  }
-};
+const { logAction } = require('../utils/audit');
 
 exports.getPendingActivities = async (req, res) => {
   try {
@@ -107,7 +93,16 @@ exports.reviewActivity = async (req, res) => {
       message: notifMessage
     });
 
-    await logAction(req.user.id, `activity_${status}`, `Activity ${id} reviewed as ${status}`, req);
+    await logAction(req, {
+      action: `activity_${status}`,
+      actorRole: req.user.role,
+      actorId: req.user.id,
+      actorName: req.user.name || 'Teacher',
+      targetType: 'activity',
+      targetId: id,
+      targetName: activity.title,
+      detail: `Activity ${id} reviewed as ${status}`
+    });
 
     res.json({ message: `Activity ${status} successfully`, activity });
   } catch (error) {
@@ -154,7 +149,13 @@ exports.bulkReview = async (req, res) => {
     }));
     if (notifications.length > 0) await Notification.insertMany(notifications);
 
-    await logAction(req.user.id, 'bulk_review', `Bulk ${status} of ${ids.length} activities`, req);
+    await logAction(req, {
+      action: 'bulk_review',
+      actorRole: req.user.role,
+      actorId: req.user.id,
+      actorName: req.user.name || 'Teacher',
+      detail: `Bulk ${status} of ${ids.length} activities`
+    });
 
     res.json({ 
       message: `Bulk ${status} complete`, 
@@ -208,7 +209,16 @@ exports.undoReview = async (req, res) => {
 
     await activity.save();
 
-    await logAction(req.user.id, 'undo_review', `Reverted ${id} from ${previousStatus} to pending`, req);
+    await logAction(req, {
+      action: 'undo_review',
+      actorRole: req.user.role,
+      actorId: req.user.id,
+      actorName: req.user.name || 'Teacher',
+      targetType: 'activity',
+      targetId: id,
+      targetName: activity.title,
+      detail: `Reverted ${id} from ${previousStatus} to pending`
+    });
 
     res.json({ message: 'Review successfully reverted to pending', activity });
   } catch (error) {
