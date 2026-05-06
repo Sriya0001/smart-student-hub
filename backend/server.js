@@ -66,7 +66,10 @@ mongoose.connect(process.env.MONGODB_URI)  .then(() => console.log('Connected to
   .catch((err) => console.error('MongoDB connection error:', err));
 
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Backend connectivity works!' });
+  res.json({ 
+    message: 'Backend connectivity works!',
+    server_process_id: process.pid
+  });
 });
 
 app.use('/api', authRoutes);
