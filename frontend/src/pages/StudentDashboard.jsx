@@ -179,9 +179,9 @@ export default function StudentDashboard() {
   if (loading) return <div className="flex justify-center items-center h-64"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
 
   return (
-    <div className="space-y-10 pb-12">
+    <div className="space-y-6 md:space-y-10 pb-12">
       {/* Premium Header Bar */}
-      <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center justify-between gap-6">
+      <div className="bg-white p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 text-center sm:text-left">
           <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[1.5rem] flex items-center justify-center text-white text-2xl md:text-3xl font-black shadow-xl border-4 border-white shrink-0">
             {user?.name?.[0].toUpperCase() || 'S'}
@@ -215,14 +215,14 @@ export default function StudentDashboard() {
 
       {/* Dynamic Noticeboard */}
       {notices.length > 0 && (
-        <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
+        <div className="bg-white p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg shadow-amber-500/20">📢</div>
              <h3 className="text-xl font-black text-gray-800 tracking-tight">Student Noticeboard</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {notices.map(notice => (
-              <div key={notice._id} className={`p-6 rounded-[2rem] border transition-all hover:scale-[1.02] ${
+              <div key={notice._id} className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] border transition-all hover:scale-[1.02] ${
                 notice.priority === 'High' ? 'bg-rose-50 border-rose-100 shadow-sm shadow-rose-100' : 
                 notice.priority === 'Medium' ? 'bg-amber-50 border-amber-100' : 'bg-blue-50 border-blue-100'
               }`}>
@@ -255,7 +255,7 @@ export default function StudentDashboard() {
       )}
 
       {/* Modern Card Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
         <Card 
           icon="📖" 
           title="Academic Records" 

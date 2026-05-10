@@ -254,7 +254,7 @@ export default function DashboardLayout({ role }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
               </svg>
             </button>
-            <h2 className="text-lg md:text-xl font-black text-gray-800 capitalize truncate max-w-[150px] sm:max-w-none">{role} Portal</h2>
+            <h2 className="text-lg md:text-xl font-black text-gray-800 capitalize">{role} Portal</h2>
           </div>
           <div className="flex items-center gap-4">
             {/* Show notification bell only for students */}
