@@ -26,6 +26,9 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isRepairing, setIsRepairing] = useState(false);
+  const [notices, setNotices] = useState([]);
+  const [newNotice, setNewNotice] = useState({ title: '', content: '', priority: 'Medium', targetDepartment: 'All' });
+  const [isPosting, setIsPosting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -37,15 +40,17 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [statsRes, logsRes, usersRes] = await Promise.all([
+      const [statsRes, logsRes, usersRes, noticesRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/analytics`, { headers }),
         axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/logs`, { headers }),
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`, { headers })
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/users`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/notices`, { headers })
       ]);
       
       setStats(statsRes.data);
       setLogs(logsRes.data);
       setUsers(usersRes.data);
+      setNotices(noticesRes.data);
     } catch (error) {
       console.error('Error fetching admin data:', error);
     } finally {
@@ -70,6 +75,37 @@ export default function AdminDashboard() {
       alert('Failed to execute repair script.');
     } finally {
       setIsRepairing(false);
+    }
+  };
+
+  const handlePostNotice = async (e) => {
+    e.preventDefault();
+    setIsPosting(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/notices`, newNotice, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewNotice({ title: '', content: '', priority: 'Medium', targetDepartment: 'All' });
+      fetchData();
+    } catch (err) {
+      console.error('Failed to post notice:', err);
+      alert('Error posting notice');
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const handleDeleteNotice = async (id) => {
+    if (!window.confirm('Delete this notice?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/admin/notices/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchData();
+    } catch (err) {
+      console.error('Delete failed:', err);
     }
   };
 
@@ -194,6 +230,125 @@ export default function AdminDashboard() {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Notice Management Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Post Notice Form */}
+        <div className="lg:col-span-1 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-fit">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg">📢</div>
+            <h3 className="text-xl font-black text-gray-800">Post a Notice</h3>
+          </div>
+          <form onSubmit={handlePostNotice} className="space-y-4">
+            <div>
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-1">Title</label>
+              <input 
+                type="text" 
+                value={newNotice.title}
+                onChange={e => setNewNotice({...newNotice, title: e.target.value})}
+                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm"
+                placeholder="e.g. Placement Drive 2026"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-1">Target Department</label>
+              <select 
+                value={newNotice.targetDepartment}
+                onChange={e => setNewNotice({...newNotice, targetDepartment: e.target.value})}
+                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm"
+              >
+                <option value="All">All Departments</option>
+                <option value="CSE">Computer Science</option>
+                <option value="ECE">Electronics</option>
+                <option value="MECH">Mechanical</option>
+                <option value="CIVIL">Civil</option>
+                <option value="IT">Information Technology</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-1">Priority</label>
+              <div className="flex gap-2">
+                {['Low', 'Medium', 'High'].map(p => (
+                  <button 
+                    key={p}
+                    type="button"
+                    onClick={() => setNewNotice({...newNotice, priority: p})}
+                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                      newNotice.priority === p 
+                        ? (p === 'High' ? 'bg-rose-500 text-white' : p === 'Medium' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white') 
+                        : 'bg-gray-50 text-gray-400'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-1">Content</label>
+              <textarea 
+                value={newNotice.content}
+                onChange={e => setNewNotice({...newNotice, content: e.target.value})}
+                rows="4"
+                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm"
+                placeholder="Write the notice details here..."
+                required
+              ></textarea>
+            </div>
+            <button 
+              type="submit"
+              disabled={isPosting}
+              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all disabled:opacity-50 flex justify-center"
+            >
+              {isPosting ? 'POSTING...' : 'PUBLISH NOTICE'}
+            </button>
+          </form>
+        </div>
+
+        {/* Existing Notices List */}
+        <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
+            <h3 className="text-xl font-black text-gray-800">Active Board</h3>
+            <span className="px-3 py-1 bg-gray-50 text-gray-400 rounded-lg text-[10px] font-black uppercase tracking-widest">{notices.length} Active</span>
+          </div>
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            {notices.map(notice => (
+              <div key={notice._id} className="group p-6 rounded-2xl border border-gray-50 hover:border-blue-100 hover:bg-blue-50/10 transition-all">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                        notice.priority === 'High' ? 'bg-rose-100 text-rose-600' : 
+                        notice.priority === 'Medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
+                      }`}>
+                        {notice.priority}
+                      </span>
+                      <span className="text-gray-300 text-[10px]">•</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">To: {notice.targetDepartment}</span>
+                    </div>
+                    <h4 className="text-lg font-black text-gray-900 mb-2">{notice.title}</h4>
+                    <p className="text-sm text-gray-500 leading-relaxed">{notice.content}</p>
+                    <p className="mt-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                      Posted {new Date(notice.createdAt).toLocaleDateString()} by {notice.author}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteNotice(notice._id)}
+                    className="p-2 text-gray-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Remove Notice"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+            {notices.length === 0 && (
+              <div className="text-center py-20 text-gray-300 italic font-medium">No notices have been posted yet.</div>
+            )}
           </div>
         </div>
       </div>

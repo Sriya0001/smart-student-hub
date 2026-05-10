@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
 const Notification = require('../models/Notification');
+const Notice = require('../models/Notice');
 const crypto = require('crypto');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const { s3Client } = require('../utils/s3Service');
@@ -220,5 +221,24 @@ exports.changePassword = async (req, res) => {
     res.json({ message: 'Password updated successfully.' });
   } catch (error) {
     res.status(500).json({ message: 'Error changing password', error: error.message });
+  }
+};
+
+exports.getNotices = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Fetch notices for 'All' or the student's specific department
+    const notices = await Notice.find({
+      $or: [
+        { targetDepartment: 'All' },
+        { targetDepartment: user.department }
+      ]
+    }).sort({ createdAt: -1 }).limit(10); // Show last 10 relevant notices
+
+    res.json(notices);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notices', error: error.message });
   }
 };

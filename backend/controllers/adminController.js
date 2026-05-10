@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Activity = require('../models/Activity');
 const AuditLog = require('../models/Log');
 const Notification = require('../models/Notification');
+const Notice = require('../models/Notice');
 
 const { logAction } = require('../utils/audit');
 
@@ -198,5 +199,71 @@ exports.getLogs = async (req, res) => {
     res.json(logs);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching logs', error: error.message });
+  }
+};
+
+exports.createNotice = async (req, res) => {
+  try {
+    const { title, content, priority, targetDepartment } = req.body;
+    const author = await User.findById(req.user.id);
+    
+    const notice = new Notice({
+      title,
+      content,
+      priority,
+      targetDepartment: targetDepartment || 'All',
+      author: author.name,
+      authorId: author._id
+    });
+
+    await notice.save();
+
+    logAction(req, {
+      action: 'create_notice',
+      actorRole: 'admin',
+      actorId: req.user.id,
+      actorName: author.name,
+      targetType: 'notice',
+      targetId: notice._id,
+      targetName: title,
+      detail: `Notice posted for ${targetDepartment || 'All'} students`
+    });
+
+    res.status(201).json({ message: 'Notice posted successfully', notice });
+  } catch (error) {
+    res.status(500).json({ message: 'Error posting notice', error: error.message });
+  }
+};
+
+exports.getAllNotices = async (req, res) => {
+  try {
+    const notices = await Notice.find().sort({ createdAt: -1 });
+    res.json(notices);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notices', error: error.message });
+  }
+};
+
+exports.deleteNotice = async (req, res) => {
+  try {
+    const notice = await Notice.findById(req.params.id);
+    if (!notice) return res.status(404).json({ message: 'Notice not found' });
+
+    await Notice.findByIdAndDelete(req.params.id);
+
+    logAction(req, {
+      action: 'delete_notice',
+      actorRole: 'admin',
+      actorId: req.user.id,
+      actorName: 'Admin',
+      targetType: 'notice',
+      targetId: notice._id,
+      targetName: notice.title,
+      detail: `Deleted notice: ${notice.title}`
+    });
+
+    res.json({ message: 'Notice deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting notice', error: error.message });
   }
 };

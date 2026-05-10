@@ -33,5 +33,6 @@ router.get('/stats', studentController.getStats);
 router.get('/view-file', studentController.getFileViewUrl);
 router.get('/notifications', studentController.getNotifications);
 router.put('/notifications/read', studentController.markNotificationsRead);
+router.get('/notices', studentController.getNotices);
 
 module.exports = router;

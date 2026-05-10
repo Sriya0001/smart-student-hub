@@ -26,6 +26,7 @@ export default function StudentDashboard() {
   const [user, setUser] = useState(null);
   const [activities, setActivities] = useState([]);
   const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0, rejected: 0 });
+  const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -38,15 +39,17 @@ export default function StudentDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [profileRes, activitiesRes, statsRes] = await Promise.all([
+      const [profileRes, activitiesRes, statsRes, noticesRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/profile`, { headers }),
         axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/my`, { headers }),
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/stats`, { headers })
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/stats`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/students/notices`, { headers })
       ]);
       
       setUser(profileRes.data);
       setActivities(activitiesRes.data);
       setStats(statsRes.data);
+      setNotices(noticesRes.data);
     } catch (err) {
       console.error('Error fetching student data:', err);
     } finally {
@@ -209,6 +212,47 @@ export default function StudentDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Dynamic Noticeboard */}
+      {notices.length > 0 && (
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-6">
+             <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg shadow-amber-500/20">📢</div>
+             <h3 className="text-xl font-black text-gray-800 tracking-tight">Student Noticeboard</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {notices.map(notice => (
+              <div key={notice._id} className={`p-6 rounded-[2rem] border transition-all hover:scale-[1.02] ${
+                notice.priority === 'High' ? 'bg-rose-50 border-rose-100 shadow-sm shadow-rose-100' : 
+                notice.priority === 'Medium' ? 'bg-amber-50 border-amber-100' : 'bg-blue-50 border-blue-100'
+              }`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                    notice.priority === 'High' ? 'bg-rose-500 text-white' : 
+                    notice.priority === 'Medium' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white'
+                  }`}>
+                    {notice.priority}
+                  </span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(notice.createdAt).toLocaleDateString()}</span>
+                </div>
+                <h4 className="text-lg font-black text-gray-900 mb-2 leading-tight">{notice.title}</h4>
+                <p className="text-sm text-gray-600 line-clamp-3 mb-4 leading-relaxed font-medium">{notice.content}</p>
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-200/20">
+                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                     <span className="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
+                     By {notice.author}
+                   </span>
+                   {notice.targetDepartment !== 'All' && (
+                     <span className="bg-white/50 px-2 py-1 rounded-lg text-[8px] font-black text-blue-600 uppercase tracking-widest border border-blue-100/30">
+                       {notice.targetDepartment} ONLY
+                     </span>
+                   )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modern Card Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

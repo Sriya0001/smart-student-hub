@@ -15,4 +15,9 @@ router.get('/analytics', adminController.getAnalytics);
 router.get('/logs', adminController.getLogs);
 router.post('/mentorships/repair', auditLogger('REPAIRED_MENTORSHIPS'), adminController.repairMentorships);
 
+// Notice Management
+router.get('/notices', adminController.getAllNotices);
+router.post('/notices', auditLogger('POSTED_NOTICE'), adminController.createNotice);
+router.delete('/notices/:id', auditLogger('DELETED_NOTICE'), adminController.deleteNotice);
+
 module.exports = router;
