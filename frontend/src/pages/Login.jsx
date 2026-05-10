@@ -1,14 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 export default function Login() {
-  const [role, setRole] = useState('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [serverStatus, setServerStatus] = useState('waking'); // 'waking' | 'ready' | 'error'
   const navigate = useNavigate();
+
+  // Ping backend immediately on page load so Render's cold start
+  // happens in the background while the user types credentials
+  useEffect(() => {
+    const wakeUpServer = async () => {
+      try {
+        await axios.get(`${import.meta.env.VITE_API_BASE_URL}/test`, { timeout: 60000 });
+        setServerStatus('ready');
+      } catch {
+        // Server may still respond to login even if /test fails
+        setServerStatus('error');
+      }
+    };
+    wakeUpServer();
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,19 +35,16 @@ export default function Login() {
         email,
         password
       });
-      console.log('Login successful:', response.data);
-      // Store JWT session token and entity payload
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      // Navigate based on actual user role from backend
       const userRole = response.data.user.role;
       if (userRole === 'faculty' || userRole === 'teacher') navigate('/faculty/dashboard');
       else if (userRole === 'admin') navigate('/admin/dashboard');
       else navigate('/student/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Server unreachable. Please check if the backend is running.');
+      setError(err.response?.data?.message || 'Server unreachable. Please try again in a moment.');
     } finally {
       setIsLoading(false);
     }
@@ -48,12 +60,34 @@ export default function Login() {
             <span className="text-white text-3xl font-extrabold tracking-tighter">SH</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mt-2 tracking-tight">Smart Student Hub</h2>
+
+          {/* Server status badge */}
+          <div className="flex items-center gap-1.5 text-xs mt-1">
+            {serverStatus === 'waking' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block"></span>
+                <span className="text-gray-500">Connecting to server...</span>
+              </>
+            )}
+            {serverStatus === 'ready' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                <span className="text-green-600 font-medium">Server ready</span>
+              </>
+            )}
+            {serverStatus === 'error' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-red-400 inline-block"></span>
+                <span className="text-red-500">Server may be slow to respond</span>
+              </>
+            )}
+          </div>
         </div>
 
         {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
-                {error}
-            </div>
+          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+            {error}
+          </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -64,7 +98,7 @@ export default function Login() {
                 type="text" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="Database email (e.g. test@app.com)"
+                placeholder="your@email.com"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                 required
               />
