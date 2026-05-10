@@ -138,6 +138,7 @@ export default function DashboardLayout({ role }) {
   const location = useLocation();
   const token    = localStorage.getItem('token');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const profileRef = useRef(null);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -176,29 +177,51 @@ export default function DashboardLayout({ role }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[70] md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm hidden md:flex">
-        <div className="p-6 flex items-center gap-3 border-b border-gray-100">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
-             <span className="text-white font-bold tracking-tighter">SH</span>
+      <aside className={`
+        fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col shadow-2xl z-[80] transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:shadow-sm
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="p-6 flex items-center justify-between border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
+               <span className="text-white font-bold tracking-tighter">SH</span>
+            </div>
+            <div>
+              <h1 className="font-bold text-gray-900 leading-tight text-sm">Student Hub</h1>
+              <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">{role}</span>
+            </div>
           </div>
-          <div>
-            <h1 className="font-bold text-gray-900 leading-tight">Student Hub</h1>
-            <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">{role}</span>
-          </div>
+          <button 
+            className="p-2 text-gray-400 hover:text-gray-600 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {links.map((link) => {
             const isActive = location.pathname === link.path;
             return (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`block px-4 py-3 rounded-xl font-medium transition-colors cursor-pointer ${
+                onClick={() => setIsSidebarOpen(false)}
+                className={`block px-4 py-3 rounded-xl font-bold transition-all cursor-pointer text-sm ${
                   isActive 
-                    ? 'bg-blue-50 text-blue-700 shadow-sm' 
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                    : 'text-gray-500 hover:bg-gray-50'
                 }`}
               >
                 {link.label}
@@ -207,13 +230,13 @@ export default function DashboardLayout({ role }) {
           })}
         </nav>
         
-        <div className="p-4 border-t border-gray-100 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xs">
+        <div className="p-4 border-t border-gray-100 flex items-center gap-3 bg-gray-50/30">
+          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs shadow-inner">
             {role[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-             <p className="text-xs font-bold text-gray-900 truncate">{user.name || 'User'}</p>
-             <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{role}</p>
+             <p className="text-xs font-black text-gray-900 truncate">{user.name || 'User'}</p>
+             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{role}</p>
           </div>
         </div>
       </aside>
@@ -221,8 +244,18 @@ export default function DashboardLayout({ role }) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 capitalize">{role} Portal</h2>
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 shadow-sm sticky top-0 z-50">
+          <div className="flex items-center gap-4">
+            <button 
+              className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg md:hidden transition-colors"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+            </button>
+            <h2 className="text-lg md:text-xl font-black text-gray-800 capitalize truncate max-w-[150px] sm:max-w-none">{role} Portal</h2>
+          </div>
           <div className="flex items-center gap-4">
             {/* Show notification bell only for students */}
             {role === 'student' && token && (
@@ -277,7 +310,7 @@ export default function DashboardLayout({ role }) {
         </header>
 
         {/* Dynamic Content Area */}
-        <div className="p-8 flex-1 overflow-y-auto">
+        <div className="p-4 md:p-8 flex-1 overflow-y-auto">
           <Outlet />
         </div>
       </main>
