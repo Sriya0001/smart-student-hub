@@ -1,4 +1,4 @@
-# 🎓 Smart Student Hub (SSM)
+# 🎓 Smart Student Hub 
 
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 [![Framework: React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB.svg)](https://reactjs.org/)
@@ -114,16 +114,7 @@ npm run dev
 
 ---
 
-## 👥 User Roles & Permissions
 
-| Feature | Student | Faculty | Admin |
-| :--- | :---: | :---: | :---: |
-| Upload Certificates | ✅ | ❌ | ❌ |
-| View Own Portfolio | ✅ | ✅ | ✅ |
-| Assign Mentors | ❌ | ❌ | ✅ |
-| Approve/Reject Records| ❌ | ✅ | ❌ |
-| Post Notices | ❌ | ✅ | ✅ |
-| System Logs & Analytics| ❌ | ❌ | ✅ |
 
 ---
 
@@ -132,4 +123,4 @@ Licensed under the **ISC License**.
 
 ---
 
-Developed with ❤️ by [Sriya](https://github.com/Sriya0001)
+Developed by [Sriya](https://github.com/Sriya0001)
