@@ -1,22 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const AuditLog = require('../models/Log');
-
-// Helper for audit logging
-const logAction = async (userId, action, description, req) => {
-  try {
-    const log = new AuditLog({
-      userId,
-      action,
-      description,
-      ip: req.ip || req.connection.remoteAddress,
-      userAgent: req.headers['user-agent']
-    });
-    await log.save();
-  } catch (err) {
-    console.error('Audit log failed:', err.message);
-  }
-};
+const { logAction } = require('../utils/audit');
 
 exports.signup = async (req, res) => {
   try {
@@ -73,7 +58,14 @@ exports.signup = async (req, res) => {
 
     await user.save();
     
-    await logAction(user._id, 'signup', `User signed up as ${user.role}`, req);
+    // Non-blocking audit log
+    logAction(req, { 
+      actorId: user._id, 
+      actorRole: user.role, 
+      actorName: user.name, 
+      action: 'signup', 
+      detail: `User signed up as ${user.role}` 
+    });
 
     res.status(201).json({ 
       message: 'User created successfully', 
@@ -104,7 +96,14 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
 
-    await logAction(user._id, 'login', 'User logged in successfully', req);
+    // Non-blocking audit log
+    logAction(req, { 
+      actorId: user._id, 
+      actorRole: user.role, 
+      actorName: user.name, 
+      action: 'login', 
+      detail: 'User logged in successfully' 
+    });
 
     res.json({ 
       token, 
@@ -124,7 +123,13 @@ exports.login = async (req, res) => {
 exports.logout = async (req, res) => {
   // Client-side logout handles token removal, but we can log it if we have a token
   if (req.user) {
-    await logAction(req.user.id, 'logout', 'User logged out', req);
+    logAction(req, { 
+      actorId: req.user.id, 
+      actorRole: req.user.role, 
+      actorName: req.user.name, 
+      action: 'logout', 
+      detail: 'User logged out' 
+    });
   }
   res.json({ message: 'Logged out successfully' });
 };

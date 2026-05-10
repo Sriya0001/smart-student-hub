@@ -41,7 +41,7 @@ exports.updateProfile = async (req, res) => {
     
     const user = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true }).select('-password');
     
-    await logAction(req, {
+    logAction(req, {
       action: 'profile_updated',
       actorRole: 'student',
       actorId: user._id,
@@ -113,7 +113,7 @@ exports.uploadActivity = async (req, res) => {
 
     await activity.save();
     
-    await logAction(req, {
+    logAction(req, {
       action: 'upload_activity',
       actorRole: 'student',
       actorId: req.user.id,
@@ -141,10 +141,12 @@ exports.getMyActivities = async (req, res) => {
 
 exports.getStats = async (req, res) => {
   try {
-    const total = await Activity.countDocuments({ studentId: req.user.id });
-    const approved = await Activity.countDocuments({ studentId: req.user.id, status: 'approved' });
-    const pending = await Activity.countDocuments({ studentId: req.user.id, status: 'pending' });
-    const rejected = await Activity.countDocuments({ studentId: req.user.id, status: 'rejected' });
+    const [total, approved, pending, rejected] = await Promise.all([
+      Activity.countDocuments({ studentId: req.user.id }),
+      Activity.countDocuments({ studentId: req.user.id, status: 'approved' }),
+      Activity.countDocuments({ studentId: req.user.id, status: 'pending' }),
+      Activity.countDocuments({ studentId: req.user.id, status: 'rejected' })
+    ]);
 
     res.json({ total, approved, pending, rejected });
   } catch (error) {
@@ -208,7 +210,7 @@ exports.changePassword = async (req, res) => {
 
     user.password = newPassword;
     await user.save(); // Password hashing handled by pre-save hook in User model
-    await logAction(req, {
+    logAction(req, {
       action: 'change_password',
       actorRole: 'student',
       actorId: user._id,
