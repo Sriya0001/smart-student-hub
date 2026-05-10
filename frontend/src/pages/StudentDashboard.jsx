@@ -7,7 +7,7 @@ import 'jspdf-autotable';
 const Card = ({ icon, title, desc, linkText, onClick, color }) => (
   <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-50 flex flex-col items-start gap-4 hover:shadow-md transition-all group">
     <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${color}`}>
-      <span className="text-lg md:text-xl">{icon}</span>
+      {icon}
     </div>
     <div>
       <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{title}</h3>
@@ -202,13 +202,15 @@ export default function StudentDashboard() {
             onClick={() => navigate('/student/profile')}
             className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base"
           >
-            ⚙️ Edit Profile
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            Edit Profile
           </button>
           <button 
             onClick={() => navigate('/student/profile')}
             className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base"
           >
-            👁️ View Profile
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            View Profile
           </button>
         </div>
       </div>
@@ -217,7 +219,9 @@ export default function StudentDashboard() {
       {notices.length > 0 && (
         <div className="bg-white p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
-             <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg shadow-amber-500/20">📢</div>
+             <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+             </div>
              <h3 className="text-xl font-black text-gray-800 tracking-tight">Student Noticeboard</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -257,7 +261,7 @@ export default function StudentDashboard() {
       {/* Modern Card Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
         <Card 
-          icon="📖" 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
           title="Academic Records" 
           desc="View your academic performance and track your growth progress across semesters."
           linkText="Explore"
@@ -265,7 +269,7 @@ export default function StudentDashboard() {
           onClick={() => navigate('/student/records')}
         />
         <Card 
-          icon="✅" 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>}
           title="Academic Certificates" 
           desc="Manage and showcase your academic achievements and certificates in one place."
           linkText="Manage"
@@ -273,7 +277,7 @@ export default function StudentDashboard() {
           onClick={() => navigate('/student/upload')}
         />
         <Card 
-          icon="🏆" 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>}
           title="Personal Achievements" 
           desc="Track your personal certificates and accomplishments outside of academics."
           linkText="View"
@@ -281,7 +285,7 @@ export default function StudentDashboard() {
           onClick={() => navigate('/student/achievements')}
         />
         <Card 
-          icon="👤" 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
           title="Profile Management" 
           desc="Update your personal details, documentation, and contact information safely."
           linkText="Edit"
@@ -289,7 +293,7 @@ export default function StudentDashboard() {
           onClick={() => navigate('/student/profile')}
         />
         <Card 
-          icon="💼" 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
           title="Project Portfolio" 
           desc="Showcase your technical projects, research work, and live deployments."
           linkText="Add"
@@ -297,7 +301,7 @@ export default function StudentDashboard() {
           onClick={() => navigate('/student/portfolio')}
         />
         <Card 
-          icon="📥" 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
           title="Generate Resume" 
           desc="Create a professional PDF portfolio or resume directly from your verified data."
           linkText="Download"
@@ -308,7 +312,7 @@ export default function StudentDashboard() {
           <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 md:p-8 rounded-[2rem] shadow-xl text-white flex flex-col justify-between hover:scale-105 transition-all">
             <div>
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-xl">👩‍🏫</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
               <h3 className="text-xl font-bold mb-1">My Mentor</h3>
               <p className="text-indigo-100 text-[10px] font-medium mb-4 uppercase tracking-widest">Guide for {user.department}</p>

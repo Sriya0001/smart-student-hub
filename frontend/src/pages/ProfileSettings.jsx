@@ -49,9 +49,9 @@ export default function ProfileSettings() {
       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/students/profile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSaveMsg('✅ Profile updated successfully!');
+      setSaveMsg('Profile updated successfully.');
     } catch (error) {
-      setSaveMsg('❌ Failed to update profile.');
+      setSaveMsg('Failed to update profile. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -60,7 +60,7 @@ export default function ProfileSettings() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (pwForm.newPassword !== pwForm.confirmPassword) {
-      return setPwMsg({ text: '❌ New passwords do not match.', ok: false });
+      return setPwMsg({ text: 'New passwords do not match.', ok: false });
     }
     setIsSavingPw(true);
     setPwMsg({ text: '', ok: false });
@@ -70,10 +70,10 @@ export default function ProfileSettings() {
         { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPwMsg({ text: '✅ Password changed successfully!', ok: true });
+      setPwMsg({ text: 'Password changed successfully!', ok: true });
       setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      setPwMsg({ text: `❌ ${err.response?.data?.message || 'Failed to change password.'}`, ok: false });
+      setPwMsg({ text: err.response?.data?.message || 'Failed to change password.', ok: false });
     } finally {
       setIsSavingPw(false);
     }
@@ -139,7 +139,16 @@ export default function ProfileSettings() {
           </div>
 
           {saveMsg && (
-            <p className={`text-sm font-bold mt-2 ${saveMsg.startsWith('✅') ? 'text-emerald-600' : 'text-red-600'}`}>{saveMsg}</p>
+          <p className={`text-sm font-bold mt-2 flex items-center gap-1.5 ${
+            saveMsg.includes('updated') ? 'text-emerald-600' : 'text-red-600'
+          }`}>
+            {saveMsg.includes('updated') ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            )}
+            {saveMsg}
+          </p>
           )}
           <div className="pt-8 border-t border-gray-50 flex justify-end gap-4">
             <button 
@@ -162,7 +171,10 @@ export default function ProfileSettings() {
 
       {/* Change Password Section */}
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 md:p-12 mt-6">
-        <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">🔒 Change Password</h2>
+        <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          Change Password
+        </h2>
         <form onSubmit={handleChangePassword} className="space-y-5 max-w-md">
           {[{ label: 'Current Password', key: 'currentPassword' }, { label: 'New Password', key: 'newPassword' }, { label: 'Confirm New Password', key: 'confirmPassword' }].map(f => (
             <div key={f.key} className="space-y-2">
@@ -177,7 +189,14 @@ export default function ProfileSettings() {
             </div>
           ))}
           {pwMsg.text && (
-            <p className={`text-sm font-bold ${pwMsg.ok ? 'text-emerald-600' : 'text-red-600'}`}>{pwMsg.text}</p>
+            <p className={`text-sm font-bold flex items-center gap-1.5 ${pwMsg.ok ? 'text-emerald-600' : 'text-red-600'}`}>
+              {pwMsg.ok ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              )}
+              {pwMsg.text}
+            </p>
           )}
           <button
             type="submit"
