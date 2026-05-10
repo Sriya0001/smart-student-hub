@@ -137,6 +137,20 @@ export default function DashboardLayout({ role }) {
   const navigate = useNavigate();
   const location = useLocation();
   const token    = localStorage.getItem('token');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -193,13 +207,14 @@ export default function DashboardLayout({ role }) {
           })}
         </nav>
         
-        <div className="p-4 border-t border-gray-100">
-          <button 
-            onClick={handleLogout}
-            className="w-full py-2.5 px-4 flex items-center justify-center gap-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer"
-          >
-            Sign Out
-          </button>
+        <div className="p-4 border-t border-gray-100 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xs">
+            {role[0].toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+             <p className="text-xs font-bold text-gray-900 truncate">{user.name || 'User'}</p>
+             <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{role}</p>
+          </div>
         </div>
       </aside>
 
@@ -208,17 +223,55 @@ export default function DashboardLayout({ role }) {
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm">
           <h2 className="text-xl font-semibold text-gray-800 capitalize">{role} Portal</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* Show notification bell only for students */}
             {role === 'student' && token && (
               <NotificationBell token={token} />
             )}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 p-[2px] cursor-pointer">
-              <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-700 uppercase bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">
-                  {role[0]}
-                </span>
-              </div>
+            
+            {/* Profile Dropdown */}
+            <div className="relative" ref={profileRef}>
+              <button 
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center gap-3 p-1 pr-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-gray-100"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-black shadow-md">
+                  {user.name?.[0]?.toUpperCase() || role[0].toUpperCase()}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs font-black text-gray-900 leading-none">{user.name?.split(' ')[0] || 'My Account'}</p>
+                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">{role}</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" className={`w-4 h-4 text-gray-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Account info</p>
+                    <p className="text-sm font-black text-gray-900 mt-1 truncate">{user.email}</p>
+                  </div>
+                  
+                  <Link 
+                    to={role === 'student' ? '/student/profile' : '#'}
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  >
+                    <span>⚙️</span> Profile Settings
+                  </Link>
+                  
+                  <div className="border-t border-gray-50 mt-1 pt-1">
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <span>🚪</span> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
