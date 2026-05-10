@@ -5,16 +5,16 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const Card = ({ icon, title, desc, linkText, onClick, color }) => (
-  <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-50 flex flex-col items-start gap-4 hover:shadow-md transition-all group">
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${color}`}>
-      <span className="text-xl">{icon}</span>
+  <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-50 flex flex-col items-start gap-4 hover:shadow-md transition-all group">
+    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${color}`}>
+      <span className="text-lg md:text-xl">{icon}</span>
     </div>
     <div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed mb-4">{desc}</p>
+      <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-500 text-xs md:text-sm leading-relaxed mb-4">{desc}</p>
       <button 
         onClick={onClick}
-        className="text-blue-600 font-bold text-xs uppercase tracking-widest hover:underline cursor-pointer"
+        className="text-blue-600 font-bold text-[10px] md:text-xs uppercase tracking-widest hover:underline cursor-pointer"
       >
         {linkText} →
       </button>
@@ -181,14 +181,14 @@ export default function StudentDashboard() {
   return (
     <div className="space-y-10 pb-12">
       {/* Premium Header Bar */}
-      <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[1.5rem] flex items-center justify-center text-white text-3xl font-black shadow-xl border-4 border-white">
+      <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 text-center sm:text-left">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[1.5rem] flex items-center justify-center text-white text-2xl md:text-3xl font-black shadow-xl border-4 border-white shrink-0">
             {user?.name?.[0].toUpperCase() || 'S'}
           </div>
           <div>
-            <h1 className="text-4xl font-black text-gray-900 tracking-tight">Welcome back, {user?.name.split(' ')[0].toLowerCase()}!</h1>
-            <div className="flex items-center gap-3 mt-2">
+            <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight capitalize">Welcome back, {user?.name.split(' ')[0].toLowerCase()}!</h1>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
               <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-xl text-xs font-bold font-mono">ID: {user?._id.slice(-8).toUpperCase()}</span>
               <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-xl text-xs font-bold border border-emerald-100 flex items-center gap-1.5">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -197,16 +197,16 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <button 
             onClick={() => navigate('/student/profile')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition-all cursor-pointer flex items-center gap-2"
+            className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             ⚙️ Edit Profile
           </button>
           <button 
             onClick={() => navigate('/student/profile')}
-            className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all cursor-pointer flex items-center gap-2"
+            className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             👁️ View Profile
           </button>
@@ -215,7 +215,7 @@ export default function StudentDashboard() {
 
       {/* Dynamic Noticeboard */}
       {notices.length > 0 && (
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+        <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg shadow-amber-500/20">📢</div>
              <h3 className="text-xl font-black text-gray-800 tracking-tight">Student Noticeboard</h3>
@@ -305,7 +305,7 @@ export default function StudentDashboard() {
           onClick={handleGenerateResume}
         />
         {user?.mentor && (
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-8 rounded-[2rem] shadow-xl text-white flex flex-col justify-between hover:scale-105 transition-all">
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 md:p-8 rounded-[2rem] shadow-xl text-white flex flex-col justify-between hover:scale-105 transition-all">
             <div>
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
                 <span className="text-xl">👩‍🏫</span>
@@ -332,8 +332,8 @@ export default function StudentDashboard() {
       </div>
 
       {/* Activity Status Section */}
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden mt-12 transition-all">
-        <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+      <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden mt-12 transition-all">
+        <div className="p-6 md:p-8 border-b border-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50">
           <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase tracking-widest text-[10px] text-gray-400">Activity Integrity Stream</h3>
           <div className="flex gap-4">
                <span className="flex items-center gap-2 text-xs font-bold text-gray-500"><span className="w-2 h-2 bg-emerald-500 rounded-full"></span> {stats.approved} Approved</span>
