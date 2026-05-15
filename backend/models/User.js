@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
   department: { type: String, trim: true },
   college: { type: String, trim: true },
   phone: { type: String, trim: true },
+  cgpa: { type: Number },
+  skills: { type: String, trim: true },
   mentor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 
