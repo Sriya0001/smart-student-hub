@@ -7,7 +7,9 @@ export default function ProfileSettings() {
     name: '',
     phone: '',
     department: '',
-    college: ''
+    college: '',
+    cgpa: '',
+    skills: ''
   });
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -31,7 +33,9 @@ export default function ProfileSettings() {
         name: res.data.name || '',
         phone: res.data.phone || '',
         department: res.data.department || '',
-        college: res.data.college || ''
+        college: res.data.college || '',
+        cgpa: res.data.cgpa || '',
+        skills: res.data.skills || ''
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -134,6 +138,29 @@ export default function ProfileSettings() {
                 placeholder="Global University"
                 value={formData.college}
                 onChange={e => setFormData({...formData, college: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">CGPA</label>
+              <input 
+                type="number" 
+                step="0.01"
+                max="10"
+                min="0"
+                className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-gray-800"
+                placeholder="e.g. 8.5"
+                value={formData.cgpa}
+                onChange={e => setFormData({...formData, cgpa: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Skills (Comma separated)</label>
+              <input 
+                type="text" 
+                className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-gray-800"
+                placeholder="React, Node.js, Python"
+                value={formData.skills}
+                onChange={e => setFormData({...formData, skills: e.target.value})}
               />
             </div>
           </div>
