@@ -10,7 +10,8 @@ export default function CertificateUpload() {
     title: '',
     category: 'Academic',
     description: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    verificationUrl: ''
   });
 
   const handleSubmit = async (e) => {
@@ -25,6 +26,7 @@ export default function CertificateUpload() {
       data.append('category', formData.category);
       data.append('description', formData.description);
       data.append('date', formData.date);
+      data.append('verificationUrl', formData.verificationUrl);
       data.append('certificate', file);
 
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/students/upload`, data, {
@@ -124,6 +126,18 @@ export default function CertificateUpload() {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
               ></textarea>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Verification Link (Optional)</label>
+              <input 
+                type="url" 
+                placeholder="e.g. https://www.coursera.org/verify/..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium transition-all"
+                value={formData.verificationUrl}
+                onChange={(e) => setFormData({...formData, verificationUrl: e.target.value})}
+              />
+              <p className="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-wider">Provide a link from the issuer for faster verification.</p>
             </div>
           </div>
 

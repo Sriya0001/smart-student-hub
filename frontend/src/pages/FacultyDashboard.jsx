@@ -367,6 +367,18 @@ export default function FacultyDashboard() {
                         <span className="text-lg">📄</span>
                       </button>
 
+                      {activity.verificationUrl && (
+                        <a 
+                          href={activity.verificationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all cursor-pointer shadow-sm"
+                          title="Open External Verification Link"
+                        >
+                          <span className="text-lg">🔗</span>
+                        </a>
+                      )}
+
                       {activeTab === 'queue' && (
                         <>
                           <button 

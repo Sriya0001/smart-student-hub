@@ -61,7 +61,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.uploadActivity = async (req, res) => {
   try {
-    const { title, category, description, date } = req.body;
+    const { title, category, description, date, verificationUrl } = req.body;
     
     if (!req.file) {
       return res.status(400).json({ message: 'Certificate file is required' });
@@ -108,6 +108,7 @@ exports.uploadActivity = async (req, res) => {
       description,
       date,
       fileUrl,
+      verificationUrl,
       status: 'pending',
       hash
     });

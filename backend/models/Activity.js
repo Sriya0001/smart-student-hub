@@ -11,6 +11,7 @@ const activitySchema = new mongoose.Schema({
   description: { type: String, trim: true },
   date: { type: Date, required: true },
   fileUrl: { type: String, required: true },
+  verificationUrl: { type: String, trim: true }, // Optional link to external verification (Coursera, LinkedIn, etc.)
   status: { 
     type: String, 
     enum: ['pending', 'approved', 'rejected'], 
